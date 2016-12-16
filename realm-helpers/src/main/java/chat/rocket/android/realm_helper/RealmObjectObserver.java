@@ -43,11 +43,13 @@ public class RealmObjectObserver<T extends RealmObject> extends AbstractRealmRes
 
   private String previousResultString;
 
-  @Override protected final RealmResults<T> queryItems(Realm realm) {
+  @Override
+  protected final RealmResults<T> queryItems(Realm realm) {
     return query.query(realm).findAll();
   }
 
-  @Override protected final RealmChangeListener<RealmResults<T>> getListener() {
+  @Override
+  protected final RealmChangeListener<RealmResults<T>> getListener() {
     return element -> {
       T currentResult = impl.extractObjectFromResults(element);
       String currentResultString = currentResult != null ? currentResult.toString() : null;

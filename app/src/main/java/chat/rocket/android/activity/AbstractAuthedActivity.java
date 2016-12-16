@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+
 import chat.rocket.android.LaunchUtil;
 import chat.rocket.android.RocketChatCache;
 import chat.rocket.android.model.ServerConfig;
@@ -36,7 +37,8 @@ abstract class AbstractAuthedActivity extends AbstractFragmentActivity {
         }
       };
 
-  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     if (savedInstanceState == null) {
       Intent intent = getIntent();
@@ -119,11 +121,14 @@ abstract class AbstractAuthedActivity extends AbstractFragmentActivity {
     onRoomIdUpdated();
   }
 
-  protected void onServerConfigIdUpdated() {}
+  protected void onServerConfigIdUpdated() {
+  }
 
-  protected void onRoomIdUpdated() {}
+  protected void onRoomIdUpdated() {
+  }
 
-  @Override protected void onResume() {
+  @Override
+  protected void onResume() {
     super.onResume();
     RocketChatService.keepalive(this);
     unconfiguredServersObserver.sub();
@@ -134,7 +139,8 @@ abstract class AbstractAuthedActivity extends AbstractFragmentActivity {
     prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
   }
 
-  @Override protected void onPause() {
+  @Override
+  protected void onPause() {
     SharedPreferences prefs = RocketChatCache.get(this);
     prefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener);
 
@@ -142,7 +148,8 @@ abstract class AbstractAuthedActivity extends AbstractFragmentActivity {
     super.onPause();
   }
 
-  @Override protected void onSaveInstanceState(Bundle outState) {
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
   }
 }

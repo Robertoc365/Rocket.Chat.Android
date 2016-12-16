@@ -7,6 +7,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import chat.rocket.android.R;
 import chat.rocket.android.RocketChatCache;
 import chat.rocket.android.api.MethodCallHelper;
@@ -25,6 +26,7 @@ import chat.rocket.android.realm_helper.RealmListObserver;
 import chat.rocket.android.realm_helper.RealmObjectObserver;
 import chat.rocket.android.realm_helper.RealmStore;
 import chat.rocket.android.renderer.UserRenderer;
+
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxCompoundButton;
 
@@ -52,7 +54,8 @@ public class SidebarMainFragment extends AbstractFragment {
     return fragment;
   }
 
-  @Override public void onCreate(@Nullable Bundle savedInstanceState) {
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     Bundle args = getArguments();
@@ -67,19 +70,21 @@ public class SidebarMainFragment extends AbstractFragment {
       RealmHelper realmHelper = RealmStore.get(serverConfigId);
       if (realmHelper != null) {
         roomsObserver = realmHelper
-            .createListObserver(realm -> realm.where(RoomSubscription.class).equalTo("open", true).findAll())
+            .createListObserver(
+                realm -> realm.where(RoomSubscription.class).equalTo("open", true).findAll())
             .setOnUpdateListener(list -> roomListManager.setRooms(list));
 
         currentUserObserver = realmHelper
             .createObjectObserver(User::queryCurrentUser)
-            .setOnUpdateListener(this::onRenderCurrentUser);
+            .setOnUpdateListener(this::onCurrentUser);
 
         methodCallHelper = new MethodCallHelper(getContext(), serverConfigId);
       }
     }
   }
 
-  @Override protected int getLayout() {
+  @Override
+  protected int getLayout() {
     if (serverConfigId == null) {
       return R.layout.simple_screen;
     } else {
@@ -87,7 +92,8 @@ public class SidebarMainFragment extends AbstractFragment {
     }
   }
 
-  @Override protected void onSetupView() {
+  @Override
+  protected void onSetupView() {
     if (serverConfigId == null) {
       return;
     }
@@ -98,6 +104,8 @@ public class SidebarMainFragment extends AbstractFragment {
     setupAddChannelButton();
 
     roomListManager = new RoomListManager(
+        rootView.findViewById(R.id.unread_title),
+        (LinearLayout) rootView.findViewById(R.id.unread_container),
         (LinearLayout) rootView.findViewById(R.id.channels_container),
         (LinearLayout) rootView.findViewById(R.id.direct_messages_container));
     roomListManager.setOnItemClickListener(view -> {
@@ -137,6 +145,11 @@ public class SidebarMainFragment extends AbstractFragment {
     }
   }
 
+  private void onCurrentUser(User user) {
+    onRenderCurrentUser(user);
+    updateRoomListMode(user);
+  }
+
   private void onRenderCurrentUser(User user) {
     if (user != null && !TextUtils.isEmpty(hostname)) {
       new UserRenderer(getContext(), user)
@@ -144,6 +157,13 @@ public class SidebarMainFragment extends AbstractFragment {
           .usernameInto((TextView) rootView.findViewById(R.id.current_user_name))
           .statusColorInto((ImageView) rootView.findViewById(R.id.current_user_status));
     }
+  }
+
+  private void updateRoomListMode(User user) {
+    if (user == null || user.getSettings() == null || user.getSettings().getPreferences() == null) {
+      return;
+    }
+    roomListManager.setUnreadRoomMode(user.getSettings().getPreferences().isUnreadRoomsMode());
   }
 
   private void setupLogoutButton() {
@@ -181,7 +201,8 @@ public class SidebarMainFragment extends AbstractFragment {
     dialog.show(getFragmentManager(), AbstractAddRoomDialogFragment.class.getSimpleName());
   }
 
-  @Override public void onResume() {
+  @Override
+  public void onResume() {
     super.onResume();
     if (roomsObserver != null) {
       roomsObserver.sub();
@@ -189,7 +210,8 @@ public class SidebarMainFragment extends AbstractFragment {
     }
   }
 
-  @Override public void onPause() {
+  @Override
+  public void onPause() {
     if (roomsObserver != null) {
       currentUserObserver.unsub();
       roomsObserver.unsub();

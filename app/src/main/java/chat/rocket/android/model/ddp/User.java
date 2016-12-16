@@ -22,12 +22,13 @@ public class User extends RealmObject {
   private String status;
   private double utcOffset;
   private RealmList<Email> emails;
+  private Settings settings;
 
-  public String get_id() {
+  public String getId() {
     return _id;
   }
 
-  public void set_id(String _id) {
+  public void setId(String _id) {
     this._id = _id;
   }
 
@@ -61,6 +62,10 @@ public class User extends RealmObject {
 
   public void setEmails(RealmList<Email> emails) {
     this.emails = emails;
+  }
+
+  public Settings getSettings() {
+    return settings;
   }
 
   public static RealmQuery<User> queryCurrentUser(Realm realm) {

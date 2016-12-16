@@ -1,7 +1,8 @@
 package chat.rocket.android.service.observer;
 
 import android.content.Context;
-import chat.rocket.android.api.DDPClientWraper;
+
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.model.internal.GetUsersOfRoomsProcedure;
 import chat.rocket.android.model.internal.LoadMessageProcedure;
@@ -10,8 +11,10 @@ import chat.rocket.android.model.internal.Session;
 import chat.rocket.android.realm_helper.RealmHelper;
 import chat.rocket.android.service.internal.StreamRoomMessageManager;
 import hugo.weaving.DebugLog;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
+
 import java.util.List;
 
 /**
@@ -26,14 +29,15 @@ public class SessionObserver extends AbstractModelObserver<Session> {
    * constructor.
    */
   public SessionObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+                         RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     count = 0;
 
     streamNotifyMessage = new StreamRoomMessageManager(context, hostname, realmHelper, ddpClient);
   }
 
-  @Override public RealmResults<Session> queryItems(Realm realm) {
+  @Override
+  public RealmResults<Session> queryItems(Realm realm) {
     return realm.where(Session.class)
         .isNotNull("token")
         .equalTo("tokenVerified", true)
@@ -41,7 +45,8 @@ public class SessionObserver extends AbstractModelObserver<Session> {
         .findAll();
   }
 
-  @Override public void onUpdateResults(List<Session> results) {
+  @Override
+  public void onUpdateResults(List<Session> results) {
     int origCount = count;
     count = results.size();
     if (origCount > 0 && count > 0) {
@@ -60,11 +65,13 @@ public class SessionObserver extends AbstractModelObserver<Session> {
     }
   }
 
-  @DebugLog private void onLogin() {
+  @DebugLog
+  private void onLogin() {
     streamNotifyMessage.register();
   }
 
-  @DebugLog private void onLogout() {
+  @DebugLog
+  private void onLogout() {
     streamNotifyMessage.unregister();
 
     realmHelper.executeTransaction(realm -> {

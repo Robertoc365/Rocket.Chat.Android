@@ -1,7 +1,7 @@
 package chat.rocket.android.service.observer;
 
 import android.content.Context;
-import chat.rocket.android.api.DDPClientWraper;
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.api.MethodCallHelper;
 import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.log.RCLog;
@@ -21,7 +21,7 @@ public class NewMessageObserver extends AbstractModelObserver<Message> {
   private final MethodCallHelper methodCall;
 
   public NewMessageObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+      RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     methodCall = new MethodCallHelper(realmHelper, ddpClient);
 
@@ -31,7 +31,7 @@ public class NewMessageObserver extends AbstractModelObserver<Message> {
           .equalTo("syncstate", SyncState.SYNCING)
           .findAll();
       for (Message message : pendingMethodCalls) {
-        message.setSyncstate(SyncState.NOT_SYNCED);
+        message.setSyncState(SyncState.NOT_SYNCED);
       }
 
       return null;
@@ -51,9 +51,9 @@ public class NewMessageObserver extends AbstractModelObserver<Message> {
     }
 
     Message message = results.get(0);
-    final String messageId = message.get_id();
-    final String roomId = message.getRid();
-    final String msg = message.getMsg();
+    final String messageId = message.getId();
+    final String roomId = message.getRoomId();
+    final String msg = message.getMessage();
 
     realmHelper.executeTransaction(realm ->
         realm.createOrUpdateObjectFromJson(Message.class, new JSONObject()

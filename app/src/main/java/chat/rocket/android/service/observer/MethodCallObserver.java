@@ -6,7 +6,7 @@ import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.model.SyncState;
 import chat.rocket.android.model.internal.MethodCall;
 import chat.rocket.android.realm_helper.RealmHelper;
-import chat.rocket.android.api.DDPClientWraper;
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android_ddp.DDPClientCallback;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -24,7 +24,7 @@ public class MethodCallObserver extends AbstractModelObserver<MethodCall> {
    * constructor.
    */
   public MethodCallObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+      RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     realmHelper.executeTransaction(realm -> {
       // resume pending operations.
@@ -32,7 +32,7 @@ public class MethodCallObserver extends AbstractModelObserver<MethodCall> {
           .equalTo("syncstate", SyncState.SYNCING)
           .findAll();
       for (MethodCall call : pendingMethodCalls) {
-        call.setSyncstate(SyncState.NOT_SYNCED);
+        call.setSyncState(SyncState.NOT_SYNCED);
       }
 
       // clean up records.

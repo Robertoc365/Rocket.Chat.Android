@@ -4,6 +4,7 @@ import bolts.Task;
 import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.realm_helper.RealmStore;
 import hugo.weaving.DebugLog;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import org.json.JSONObject;
@@ -64,9 +65,10 @@ public class ServerConfig extends RealmObject {
   }
 
   /**
-   * Log the server connection is lost due to soem exception.
+   * Log the server connection is lost due to some exception.
    */
-  @DebugLog public static void logConnectionError(String serverConfigId, Exception exception) {
+  @DebugLog
+  public static void logConnectionError(String serverConfigId, Exception exception) {
     RealmStore.getDefault().executeTransaction(
         realm -> realm.createOrUpdateObjectFromJson(ServerConfig.class, new JSONObject()
             .put("serverConfigId", serverConfigId)

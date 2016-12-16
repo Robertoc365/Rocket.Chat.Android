@@ -3,10 +3,11 @@ package chat.rocket.android.service;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+
 import bolts.Continuation;
 import bolts.Task;
 import bolts.TaskCompletionSource;
-import chat.rocket.android.api.DDPClientWraper;
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.helper.TextUtils;
 import chat.rocket.android.log.RCLog;
@@ -31,13 +32,14 @@ import hugo.weaving.DebugLog;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.json.JSONObject;
 
 /**
  * Thread for handling WebSocket connection.
  */
 public class RocketChatWebSocketThread extends HandlerThread {
-  private static final Class[] REGISTERABLE_CLASSES = {
+  private static final Class[] REGISTRABLE_CLASSES = {
       LoginServiceConfigurationSubscriber.class,
       ActiveUsersSubscriber.class,
       UserDataSubscriber.class,
@@ -55,8 +57,8 @@ public class RocketChatWebSocketThread extends HandlerThread {
   private final String serverConfigId;
   private final RealmHelper defaultRealm;
   private final RealmHelper serverConfigRealm;
-  private final ArrayList<Registerable> listeners = new ArrayList<>();
-  private DDPClientWraper ddpClient;
+  private final ArrayList<Registrable> listeners = new ArrayList<>();
+  private DDPClientWrapper ddpClient;
   private boolean listenersRegistered;
 
   private RocketChatWebSocketThread(Context appContext, String serverConfigId) {
@@ -70,11 +72,13 @@ public class RocketChatWebSocketThread extends HandlerThread {
   /**
    * create new Thread.
    */
-  @DebugLog public static Task<RocketChatWebSocketThread> getStarted(Context appContext,
-      ServerConfig config) {
+  @DebugLog
+  public static Task<RocketChatWebSocketThread> getStarted(Context appContext,
+                                                           ServerConfig config) {
     TaskCompletionSource<RocketChatWebSocketThread> task = new TaskCompletionSource<>();
     new RocketChatWebSocketThread(appContext, config.getServerConfigId()) {
-      @Override protected void onLooperPrepared() {
+      @Override
+      protected void onLooperPrepared() {
         try {
           super.onLooperPrepared();
           task.setResult(this);
@@ -88,7 +92,8 @@ public class RocketChatWebSocketThread extends HandlerThread {
             _task.getResult().connect().onSuccessTask(__task -> _task));
   }
 
-  @Override protected void onLooperPrepared() {
+  @Override
+  protected void onLooperPrepared() {
     super.onLooperPrepared();
     forceInvalidateTokens();
   }
@@ -109,11 +114,13 @@ public class RocketChatWebSocketThread extends HandlerThread {
   /**
    * destroy the thread.
    */
-  @DebugLog public static void destroy(RocketChatWebSocketThread thread) {
+  @DebugLog
+  public static void destroy(RocketChatWebSocketThread thread) {
     thread.quit();
   }
 
-  @Override public boolean quit() {
+  @Override
+  public boolean quit() {
     if (isAlive()) {
       new Handler(getLooper()).post(() -> {
         RCLog.d("thread %s: quit()", Thread.currentThread().getId());
@@ -129,7 +136,8 @@ public class RocketChatWebSocketThread extends HandlerThread {
   /**
    * synchronize the state of the thread with ServerConfig.
    */
-  @DebugLog public void keepalive() {
+  @DebugLog
+  public void keepAlive() {
     if (ddpClient == null || !ddpClient.isConnected()) {
       defaultRealm.executeTransaction(realm -> {
         ServerConfig config = realm.where(ServerConfig.class)
@@ -146,11 +154,12 @@ public class RocketChatWebSocketThread extends HandlerThread {
 
   private void prepareWebSocket(String hostname) {
     if (ddpClient == null || !ddpClient.isConnected()) {
-      ddpClient = DDPClientWraper.create(hostname);
+      ddpClient = DDPClientWrapper.create(hostname);
     }
   }
 
-  @DebugLog private Task<Void> connect() {
+  @DebugLog
+  private Task<Void> connect() {
     final ServerConfig config = defaultRealm.executeTransactionForRead(realm ->
         realm.where(ServerConfig.class).equalTo("serverConfigId", serverConfigId).findFirst());
 
@@ -173,7 +182,8 @@ public class RocketChatWebSocketThread extends HandlerThread {
       return task;
     }).onSuccess(new Continuation<DDPClientCallback.Connect, Object>() {
       // TODO type detection doesn't work due to retrolambda's bug...
-      @Override public Object then(Task<DDPClientCallback.Connect> task)
+      @Override
+      public Object then(Task<DDPClientCallback.Connect> task)
           throws Exception {
         registerListeners();
 
@@ -217,16 +227,16 @@ public class RocketChatWebSocketThread extends HandlerThread {
         realm.where(ServerConfig.class).equalTo("serverConfigId", serverConfigId).findFirst());
     final String hostname = config.getHostname();
 
-    for (Class clazz : REGISTERABLE_CLASSES) {
+    for (Class clazz : REGISTRABLE_CLASSES) {
       try {
         Constructor ctor = clazz.getConstructor(Context.class, String.class, RealmHelper.class,
-            DDPClientWraper.class);
+            DDPClientWrapper.class);
         Object obj = ctor.newInstance(appContext, hostname, serverConfigRealm, ddpClient);
 
-        if (obj instanceof Registerable) {
-          Registerable registerable = (Registerable) obj;
-          registerable.register();
-          listeners.add(registerable);
+        if (obj instanceof Registrable) {
+          Registrable registrable = (Registrable) obj;
+          registrable.register();
+          listeners.add(registrable);
         }
       } catch (Exception exception) {
         RCLog.w(exception, "Failed to register listeners!!");
@@ -240,10 +250,10 @@ public class RocketChatWebSocketThread extends HandlerThread {
       return;
     }
 
-    Iterator<Registerable> iterator = listeners.iterator();
+    Iterator<Registrable> iterator = listeners.iterator();
     while (iterator.hasNext()) {
-      Registerable registerable = iterator.next();
-      registerable.unregister();
+      Registrable registrable = iterator.next();
+      registrable.unregister();
       iterator.remove();
     }
     if (ddpClient != null) {

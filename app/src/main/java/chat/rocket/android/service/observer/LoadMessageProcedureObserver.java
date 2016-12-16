@@ -2,7 +2,7 @@ package chat.rocket.android.service.observer;
 
 import android.content.Context;
 import bolts.Task;
-import chat.rocket.android.api.DDPClientWraper;
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.api.MethodCallHelper;
 import chat.rocket.android.log.RCLog;
 import chat.rocket.android.model.SyncState;
@@ -23,7 +23,7 @@ public class LoadMessageProcedureObserver extends AbstractModelObserver<LoadMess
   private final MethodCallHelper methodCall;
 
   public LoadMessageProcedureObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+      RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     methodCall = new MethodCallHelper(realmHelper, ddpClient);
   }
@@ -58,7 +58,7 @@ public class LoadMessageProcedureObserver extends AbstractModelObserver<LoadMess
                       .equalTo("rid", roomId)
                       .equalTo("syncstate", SyncState.SYNCED)
                       .findAllSorted("ts", Sort.ASCENDING).first(null));
-              long lastTs = lastMessage != null ? lastMessage.getTs() : 0;
+              long lastTs = lastMessage != null ? lastMessage.getTimeStamp() : 0;
               int messageCount = _task.getResult().length();
               return realmHelper.executeTransaction(realm ->
                   realm.createOrUpdateObjectFromJson(LoadMessageProcedure.class, new JSONObject()

@@ -1,6 +1,7 @@
 package chat.rocket.android.model.ddp;
 
 import chat.rocket.android.model.SyncState;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import org.json.JSONException;
@@ -25,59 +26,59 @@ public class Message extends RealmObject {
   private String attachments; //JSONArray.
   private String urls; //JSONArray.
 
-  public String get_id() {
+  public String getId() {
     return _id;
   }
 
-  public void set_id(String _id) {
+  public void setId(String _id) {
     this._id = _id;
   }
 
-  public String getT() {
+  public String getType() {
     return t;
   }
 
-  public void setT(String t) {
+  public void setType(String t) {
     this.t = t;
   }
 
-  public String getRid() {
+  public String getRoomId() {
     return rid;
   }
 
-  public void setRid(String rid) {
+  public void setRoomId(String rid) {
     this.rid = rid;
   }
 
-  public int getSyncstate() {
+  public int getSyncState() {
     return syncstate;
   }
 
-  public void setSyncstate(int syncstate) {
+  public void setSyncState(int syncstate) {
     this.syncstate = syncstate;
   }
 
-  public long getTs() {
+  public long getTimeStamp() {
     return ts;
   }
 
-  public void setTs(long ts) {
+  public void setTimeStamp(long ts) {
     this.ts = ts;
   }
 
-  public String getMsg() {
+  public String getMessage() {
     return msg;
   }
 
-  public void setMsg(String msg) {
+  public void setMessage(String msg) {
     this.msg = msg;
   }
 
-  public User getU() {
+  public User getUser() {
     return u;
   }
 
-  public void setU(User u) {
+  public void setUser(User u) {
     this.u = u;
   }
 

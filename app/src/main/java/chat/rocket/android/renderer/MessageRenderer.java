@@ -22,14 +22,14 @@ public class MessageRenderer extends AbstractRenderer<Message> {
 
   public MessageRenderer(Context context, Message message) {
     super(context, message);
-    userRenderer = new UserRenderer(context, message.getU());
+    userRenderer = new UserRenderer(context, message.getUser());
   }
 
   /**
    * show Avatar image.
    */
   public MessageRenderer avatarInto(ImageView imageView, String hostname) {
-    switch (object.getSyncstate()) {
+    switch (object.getSyncState()) {
       case SyncState.FAILED:
         imageView.setImageResource(R.drawable.ic_error_outline_black_24dp);
         break;
@@ -56,13 +56,13 @@ public class MessageRenderer extends AbstractRenderer<Message> {
       return this;
     }
 
-    switch (object.getSyncstate()) {
+    switch (object.getSyncState()) {
       case SyncState.NOT_SYNCED:
       case SyncState.SYNCING:
         textView.setText(R.string.sending);
         break;
       default:
-        textView.setText(DateTime.fromEpocMs(object.getTs(), DateTime.Format.TIME));
+        textView.setText(DateTime.fromEpocMs(object.getTimeStamp(), DateTime.Format.TIME));
         break;
     }
 
@@ -77,7 +77,7 @@ public class MessageRenderer extends AbstractRenderer<Message> {
       return this;
     }
 
-    rocketChatMessageLayout.setText(object.getMsg());
+    rocketChatMessageLayout.setText(object.getMessage());
 
     return this;
   }

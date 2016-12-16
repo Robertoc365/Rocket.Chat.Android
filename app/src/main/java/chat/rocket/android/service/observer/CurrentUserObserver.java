@@ -1,16 +1,19 @@
 package chat.rocket.android.service.observer;
 
 import android.content.Context;
-import chat.rocket.android.api.DDPClientWraper;
+
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.api.MethodCallHelper;
 import chat.rocket.android.helper.LogcatIfError;
 import chat.rocket.android.model.ddp.User;
 import chat.rocket.android.realm_helper.RealmHelper;
-import chat.rocket.android.service.Registerable;
+import chat.rocket.android.service.Registrable;
 import chat.rocket.android.service.ddp.stream.StreamNotifyUserSubscriptionsChanged;
 import hugo.weaving.DebugLog;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,20 +25,22 @@ public class CurrentUserObserver extends AbstractModelObserver<User> {
   private final MethodCallHelper methodCall;
 
 
-  private ArrayList<Registerable> listeners;
+  private ArrayList<Registrable> listeners;
 
   public CurrentUserObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+                             RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     methodCall = new MethodCallHelper(realmHelper, ddpClient);
     currentUserExists = false;
   }
 
-  @Override public RealmResults<User> queryItems(Realm realm) {
+  @Override
+  public RealmResults<User> queryItems(Realm realm) {
     return User.queryCurrentUser(realm).findAll();
   }
 
-  @Override public void onUpdateResults(List<User> results) {
+  @Override
+  public void onUpdateResults(List<User> results) {
     boolean exists = !results.isEmpty();
 
     if (currentUserExists != exists) {
@@ -55,12 +60,12 @@ public class CurrentUserObserver extends AbstractModelObserver<User> {
     }
     listeners = new ArrayList<>();
 
-    final String userId = user.get_id();
+    final String userId = user.getId();
 
     // get and observe Room subscriptions.
     methodCall.getRoomSubscriptions().onSuccess(task -> {
       if (listeners != null) {
-        Registerable listener = new StreamNotifyUserSubscriptionsChanged(
+        Registrable listener = new StreamNotifyUserSubscriptionsChanged(
             context, hostname, realmHelper, ddpClient, userId);
         listener.register();
         listeners.add(listener);
@@ -72,7 +77,7 @@ public class CurrentUserObserver extends AbstractModelObserver<User> {
   @DebugLog
   private void onLogout() {
     if (listeners != null) {
-      for (Registerable listener : listeners) {
+      for (Registrable listener : listeners) {
         listener.unregister();
       }
     }

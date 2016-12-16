@@ -2,6 +2,7 @@ package chat.rocket.android.model.internal;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+
 import bolts.Task;
 import bolts.TaskCompletionSource;
 import chat.rocket.android.helper.LogcatIfError;
@@ -11,10 +12,13 @@ import chat.rocket.android.model.SyncState;
 import chat.rocket.android.realm_helper.RealmHelper;
 import chat.rocket.android.realm_helper.RealmObjectObserver;
 import chat.rocket.android.service.RocketChatService;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+
 import java.util.HashMap;
 import java.util.UUID;
+
 import org.json.JSONObject;
 
 public class MethodCall extends RealmObject {
@@ -34,11 +38,11 @@ public class MethodCall extends RealmObject {
     this.methodCallId = methodCallId;
   }
 
-  public int getSyncstate() {
+  public int getSyncState() {
     return syncstate;
   }
 
-  public void setSyncstate(int syncstate) {
+  public void setSyncState(int syncstate) {
     this.syncstate = syncstate;
   }
 
@@ -96,7 +100,8 @@ public class MethodCall extends RealmObject {
    * insert a new record to request a method call.
    */
   public static Task<String> execute(@Nullable final Context context,
-      RealmHelper realmHelper, String name, String paramsJson, long timeout) {
+                                     RealmHelper realmHelper, String name, String paramsJson,
+                                     long timeout) {
     final String newId = UUID.randomUUID().toString();
     TaskCompletionSource<String> task = new TaskCompletionSource<>();
     realmHelper.executeTransaction(realm -> {
@@ -115,9 +120,9 @@ public class MethodCall extends RealmObject {
             realmHelper.createObjectObserver(realm ->
                 realm.where(MethodCall.class).equalTo("methodCallId", newId));
         observer.setOnUpdateListener(methodCall -> {
-          int syncstate = methodCall.getSyncstate();
-          RCLog.d("MethodCall[%s] syncstate=%d", methodCall.getMethodCallId(), syncstate);
-          if (syncstate == SyncState.SYNCED) {
+          int syncState = methodCall.getSyncState();
+          RCLog.d("MethodCall[%s] syncstate=%d", methodCall.getMethodCallId(), syncState);
+          if (syncState == SyncState.SYNCED) {
             String resultJson = methodCall.getResultJson();
             if (TextUtils.isEmpty(resultJson)) {
               task.setResult(null);
@@ -127,7 +132,7 @@ public class MethodCall extends RealmObject {
             observer.unsub();
             REF_MAP.remove(methodCall.getMethodCallId());
             remove(realmHelper, methodCall.getMethodCallId()).continueWith(new LogcatIfError());
-          } else if (syncstate == SyncState.FAILED) {
+          } else if (syncState == SyncState.FAILED) {
             task.setError(new Error(methodCall.getResultJson()));
             observer.unsub();
             REF_MAP.remove(methodCall.getMethodCallId());

@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
 import chat.rocket.android.R;
 import chat.rocket.android.api.MethodCallHelper;
 import chat.rocket.android.fragment.chatroom.dialog.UsersOfRoomDialogFragment;
@@ -33,10 +34,13 @@ import chat.rocket.android.realm_helper.RealmObjectObserver;
 import chat.rocket.android.realm_helper.RealmStore;
 import chat.rocket.android.service.RocketChatService;
 import chat.rocket.android.widget.message.MessageComposer;
+
 import com.jakewharton.rxbinding.support.v4.widget.RxDrawerLayout;
 import io.realm.Sort;
+
 import java.lang.reflect.Field;
 import java.util.UUID;
+
 import org.json.JSONObject;
 
 /**
@@ -71,7 +75,8 @@ public class RoomFragment extends AbstractChatRoomFragment
   public RoomFragment() {
   }
 
-  @Override public void onCreate(@Nullable Bundle savedInstanceState) {
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     Bundle args = getArguments();
@@ -84,7 +89,7 @@ public class RoomFragment extends AbstractChatRoomFragment
             .isNotNull("hostname")
             .findFirst()).getHostname();
     userId = realmHelper.executeTransactionForRead(realm ->
-        User.queryCurrentUser(realm).findFirst()).get_id();
+        User.queryCurrentUser(realm).findFirst()).getId();
     token = realmHelper.executeTransactionForRead(realm ->
         Session.queryDefaultSession(realm).findFirst()).getToken();
     roomObserver = realmHelper
@@ -100,11 +105,13 @@ public class RoomFragment extends AbstractChatRoomFragment
     }
   }
 
-  @Override protected int getLayout() {
+  @Override
+  protected int getLayout() {
     return R.layout.fragment_room;
   }
 
-  @Override protected void onSetupView() {
+  @Override
+  protected void onSetupView() {
     RecyclerView listView = (RecyclerView) rootView.findViewById(R.id.recyclerview);
     MessageListAdapter adapter = (MessageListAdapter) realmHelper.createListAdapter(getContext(),
         realm -> realm.where(Message.class)
@@ -120,7 +127,8 @@ public class RoomFragment extends AbstractChatRoomFragment
     listView.setLayoutManager(layoutManager);
 
     scrollListener = new LoadMoreScrollListener(layoutManager, 40) {
-      @Override public void requestMoreItem() {
+      @Override
+      public void requestMoreItem() {
         loadMoreRequest();
       }
     };
@@ -130,11 +138,12 @@ public class RoomFragment extends AbstractChatRoomFragment
     setupMessageComposer();
   }
 
-  @Override public void onItemClick(PairedMessage pairedMessage) {
+  @Override
+  public void onItemClick(PairedMessage pairedMessage) {
     if (pairedMessage.target != null) {
-      final int syncstate = pairedMessage.target.getSyncstate();
+      final int syncstate = pairedMessage.target.getSyncState();
       if (syncstate == SyncState.FAILED) {
-        final String messageId = pairedMessage.target.get_id();
+        final String messageId = pairedMessage.target.getId();
         new AlertDialog.Builder(getContext())
             .setPositiveButton(R.string.resend, (dialog, which) -> {
               realmHelper.executeTransaction(realm ->
@@ -148,7 +157,8 @@ public class RoomFragment extends AbstractChatRoomFragment
               realmHelper.executeTransaction(realm ->
                   realm.where(Message.class)
                       .equalTo("_id", messageId).findAll().deleteAllFromRealm()
-              ).continueWith(new LogcatIfError());;
+              ).continueWith(new LogcatIfError());
+              ;
             })
             .show();
       }
@@ -211,7 +221,7 @@ public class RoomFragment extends AbstractChatRoomFragment
       return;
     }
 
-    String type = roomSubscription.getT();
+    String type = roomSubscription.getType();
     if (RoomSubscription.TYPE_CHANNEL.equals(type)) {
       activityToolbar.setNavigationIcon(R.drawable.ic_hashtag_white_24dp);
     } else if (RoomSubscription.TYPE_PRIVATE.equals(type)) {
@@ -231,7 +241,7 @@ public class RoomFragment extends AbstractChatRoomFragment
     RecyclerView listView = (RecyclerView) rootView.findViewById(R.id.recyclerview);
     if (listView != null && listView.getAdapter() instanceof MessageListAdapter) {
       MessageListAdapter adapter = (MessageListAdapter) listView.getAdapter();
-      final int syncstate = procedure.getSyncstate();
+      final int syncstate = procedure.getSyncState();
       final boolean hasNext = procedure.isHasNext();
       RCLog.d("hasNext: %s syncstate: %d", hasNext, syncstate);
       if (syncstate == SyncState.SYNCED || syncstate == SyncState.FAILED) {
@@ -269,7 +279,7 @@ public class RoomFragment extends AbstractChatRoomFragment
           .equalTo("hasNext", true)
           .findFirst();
       if (procedure != null) {
-        procedure.setSyncstate(SyncState.NOT_SYNCED);
+        procedure.setSyncState(SyncState.NOT_SYNCED);
       }
       return null;
     }).onSuccessTask(task -> {
@@ -287,7 +297,8 @@ public class RoomFragment extends AbstractChatRoomFragment
     }
   }
 
-  @Override public void onResume() {
+  @Override
+  public void onResume() {
     super.onResume();
     roomObserver.sub();
     procedureObserver.sub();
@@ -295,13 +306,15 @@ public class RoomFragment extends AbstractChatRoomFragment
     markAsReadIfNeeded();
   }
 
-  @Override public void onPause() {
+  @Override
+  public void onPause() {
     procedureObserver.unsub();
     roomObserver.unsub();
     super.onPause();
   }
 
-  @Override public boolean onBackPressed() {
+  @Override
+  public boolean onBackPressed() {
     return closeSideMenuIfNeeded() || messageComposerManager.hideMessageComposerIfNeeded();
   }
 }

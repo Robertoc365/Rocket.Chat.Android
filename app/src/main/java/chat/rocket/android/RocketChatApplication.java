@@ -34,6 +34,6 @@ public class RocketChatApplication extends MultiDexApplication {
 
     InstabugWrapper.build(this, getString(R.string.instabug_api_key));
 
-    //TODO: add periodic trigger for RocketChatService.keepalive(this) here!
+    //TODO: add periodic trigger for RocketChatService.keepAlive(this) here!
   }
 }

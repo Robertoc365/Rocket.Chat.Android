@@ -3,6 +3,7 @@ package chat.rocket.android.activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+
 import chat.rocket.android.R;
 import chat.rocket.android.RocketChatCache;
 import chat.rocket.android.fragment.server_config.InputHostnameFragment;
@@ -33,14 +34,19 @@ public class AddServerActivity extends AbstractFragmentActivity {
       .createObjectObserver(realm ->
           realm.where(ServerConfig.class).equalTo("serverConfigId", serverConfigId))
       .setOnUpdateListener(config -> {
+        if (isFinishing()) {
+          return;
+        }
         if (config == null || config.getState() == ServerConfig.STATE_CONNECTION_ERROR) {
           showFragment(new InputHostnameFragment());
         } else {
-          showFragment(WaitingFragment.create(getString(R.string.add_server_activity_waiting_server)));
+          showFragment(
+              WaitingFragment.create(getString(R.string.add_server_activity_waiting_server)));
         }
       });
 
-  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.simple_screen);
@@ -66,28 +72,33 @@ public class AddServerActivity extends AbstractFragmentActivity {
     serverConfigId = UUID.randomUUID().toString();
   }
 
-  @Override protected int getLayoutContainerForFragment() {
+  @Override
+  protected int getLayoutContainerForFragment() {
     return R.id.content;
   }
 
-  @Override protected void onResume() {
+  @Override
+  protected void onResume() {
     super.onResume();
     configuredServersObserver.sub();
     targetServerConfigObserver.sub();
   }
 
-  @Override protected void onPause() {
+  @Override
+  protected void onPause() {
     configuredServersObserver.unsub();
     targetServerConfigObserver.unsub();
     super.onPause();
   }
 
-  @Override protected void showFragment(Fragment fragment) {
+  @Override
+  protected void showFragment(Fragment fragment) {
     injectServerConfigIdArgTo(fragment);
     super.showFragment(fragment);
   }
 
-  @Override protected void showFragmentWithBackStack(Fragment fragment) {
+  @Override
+  protected void showFragmentWithBackStack(Fragment fragment) {
     injectServerConfigIdArgTo(fragment);
     super.showFragmentWithBackStack(fragment);
   }
@@ -101,7 +112,8 @@ public class AddServerActivity extends AbstractFragmentActivity {
     fragment.setArguments(args);
   }
 
-  @Override protected void onBackPressedNotHandled() {
+  @Override
+  protected void onBackPressedNotHandled() {
     moveTaskToBack(true);
   }
 }

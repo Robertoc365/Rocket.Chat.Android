@@ -2,7 +2,7 @@ package chat.rocket.android.service.observer;
 
 import android.content.Context;
 import bolts.Task;
-import chat.rocket.android.api.DDPClientWraper;
+import chat.rocket.android.api.DDPClientWrapper;
 import chat.rocket.android.api.MethodCallHelper;
 import chat.rocket.android.log.RCLog;
 import chat.rocket.android.model.SyncState;
@@ -22,7 +22,7 @@ public class GetUsersOfRoomsProcedureObserver
   private final MethodCallHelper methodCall;
 
   public GetUsersOfRoomsProcedureObserver(Context context, String hostname,
-      RealmHelper realmHelper, DDPClientWraper ddpClient) {
+      RealmHelper realmHelper, DDPClientWrapper ddpClient) {
     super(context, hostname, realmHelper, ddpClient);
     methodCall = new MethodCallHelper(realmHelper, ddpClient);
   }
