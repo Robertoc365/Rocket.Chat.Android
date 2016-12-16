@@ -1,6 +1,7 @@
 package chat.rocket.android.api;
 
 import android.support.annotation.Nullable;
+
 import bolts.Task;
 import chat.rocket.android.helper.OkHttpHelper;
 import chat.rocket.android.helper.TextUtils;
@@ -9,18 +10,20 @@ import chat.rocket.android_ddp.DDPClient;
 import chat.rocket.android_ddp.DDPClientCallback;
 import chat.rocket.android_ddp.DDPSubscription;
 import java.util.UUID;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import rx.Observable;
 
 /**
  * DDP client wrapper.
  */
-public class DDPClientWraper {
+public class DDPClientWrapper {
   private final DDPClient ddpClient;
   private final String hostname;
 
-  private DDPClientWraper(String hostname) {
+  private DDPClientWrapper(String hostname) {
     ddpClient = new DDPClient(OkHttpHelper.getClientForWebSocket());
     this.hostname = hostname;
   }
@@ -28,8 +31,8 @@ public class DDPClientWraper {
   /**
    * create new API client instance.
    */
-  public static DDPClientWraper create(String hostname) {
-    return new DDPClientWraper(hostname);
+  public static DDPClientWrapper create(String hostname) {
+    return new DDPClientWrapper(hostname);
   }
 
   /**
@@ -85,7 +88,7 @@ public class DDPClientWraper {
    * Execute raw RPC.
    */
   public Task<DDPClientCallback.RPC> rpc(String methodCallId, String methodName, String params,
-      long timeoutMs) {
+                                         long timeoutMs) {
     RCLog.d("rpc:[%s]> %s(%s) timeout=%d", methodCallId, methodName, params, timeoutMs);
     if (TextUtils.isEmpty(params)) {
       return ddpClient.rpc(methodName, null, methodCallId, timeoutMs).continueWithTask(task -> {
