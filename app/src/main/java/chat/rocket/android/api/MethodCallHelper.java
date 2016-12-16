@@ -9,6 +9,7 @@ import chat.rocket.android.helper.CheckSum;
 import chat.rocket.android.helper.TextUtils;
 import chat.rocket.android.model.SyncState;
 import chat.rocket.android.model.ddp.Message;
+import chat.rocket.android.model.ddp.PublicSetting;
 import chat.rocket.android.model.ddp.RoomSubscription;
 import chat.rocket.android.model.internal.MethodCall;
 import chat.rocket.android.model.internal.Session;
@@ -28,10 +29,10 @@ import org.json.JSONObject;
  */
 public class MethodCallHelper {
 
-  private final Context context;
-  private final RealmHelper realmHelper;
-  private final DDPClientWrapper ddpClient;
-  private static final long TIMEOUT_MS = 4000;
+  protected final Context context;
+  protected final RealmHelper realmHelper;
+  protected final DDPClientWrapper ddpClient;
+  protected static final long TIMEOUT_MS = 4000;
 
   @Deprecated
   /**
@@ -94,15 +95,15 @@ public class MethodCallHelper {
     });
   }
 
-  private interface ParamBuilder {
+  protected interface ParamBuilder {
     JSONArray buildParam() throws JSONException;
   }
 
-  private Task<String> call(String methodName, long timeout) {
+  protected final Task<String> call(String methodName, long timeout) {
     return injectErrorHandler(executeMethodCall(methodName, null, timeout));
   }
 
-  private Task<String> call(String methodName, long timeout, ParamBuilder paramBuilder) {
+  protected final Task<String> call(String methodName, long timeout, ParamBuilder paramBuilder) {
     try {
       final JSONArray params = paramBuilder.buildParam();
       return injectErrorHandler(executeMethodCall(methodName,
@@ -112,10 +113,10 @@ public class MethodCallHelper {
     }
   }
 
-  private static final Continuation<String, Task<JSONObject>> CONVERT_TO_JSON_OBJECT =
+  protected static final Continuation<String, Task<JSONObject>> CONVERT_TO_JSON_OBJECT =
       task -> Task.forResult(new JSONObject(task.getResult()));
 
-  private static final Continuation<String, Task<JSONArray>> CONVERT_TO_JSON_ARRAY =
+  protected static final Continuation<String, Task<JSONArray>> CONVERT_TO_JSON_ARRAY =
       task -> Task.forResult(new JSONArray(task.getResult()));
 
   /**
@@ -323,7 +324,7 @@ public class MethodCallHelper {
   /**
    * Send message object.
    */
-  public Task<JSONObject> sendMessage(final JSONObject messageJson) {
+  private Task<JSONObject> sendMessage(final JSONObject messageJson) {
     return call("sendMessage", TIMEOUT_MS, () -> new JSONArray().put(messageJson))
         .onSuccessTask(CONVERT_TO_JSON_OBJECT)
         .onSuccessTask(task -> Task.forResult(Message.customizeJson(task.getResult())));
@@ -335,5 +336,23 @@ public class MethodCallHelper {
   public Task<Void> readMessages(final String roomId) {
     return call("readMessages", TIMEOUT_MS, () -> new JSONArray().put(roomId))
         .onSuccessTask(task -> Task.forResult(null));
+  }
+
+
+  public Task<Void> getPublicSettings() {
+    return call("public-settings/get", TIMEOUT_MS)
+        .onSuccessTask(CONVERT_TO_JSON_ARRAY)
+        .onSuccessTask(task -> {
+          final JSONArray settings = task.getResult();
+          for (int i = 0; i < settings.length(); i++) {
+            PublicSetting.customizeJson(settings.getJSONObject(i));
+          }
+
+          return realmHelper.executeTransaction(realm -> {
+            realm.delete(PublicSetting.class);
+            realm.createOrUpdateAllFromJson(PublicSetting.class, settings);
+            return null;
+          });
+        });
   }
 }
